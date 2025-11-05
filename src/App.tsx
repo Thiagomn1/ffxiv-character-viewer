@@ -13,20 +13,22 @@ interface CharacterResult {
 }
 
 export default function App() {
-  const [url, setUrl] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<CharacterResult[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url.trim()) return alert("Please enter a character name.");
+    if (!name.trim()) return alert("Please enter a character name.");
 
     setLoading(true);
     setResults([]);
 
     try {
-      const name = encodeURIComponent(url.trim());
-      const res = await fetch(`http://localhost:8080/api/character/${name}`);
+      const nameTrimmed = name.trim();
+      const res = await fetch(
+        `http://localhost:8080/api/character/${nameTrimmed}`
+      );
       if (!res.ok) throw new Error("Failed to fetch character data.");
 
       const data = await res.json();
@@ -55,8 +57,8 @@ export default function App() {
           <input
             type="text"
             placeholder="Enter your character name..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="w-full p-3 rounded-lg bg-lodestoneBlue/50 border border-gold text-parchment placeholder-parchment/70 focus:outline-none focus:ring-2 focus:ring-gold"
           />
           <button
