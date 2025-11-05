@@ -28,7 +28,7 @@ export default function App() {
     try {
       const nameTrimmed = name.trim();
       const res = await fetch(
-        `http://localhost:8080/api/character/${nameTrimmed}`
+        `http://localhost:8080/api/character/search/${nameTrimmed}`
       );
       if (!res.ok) throw new Error("Failed to fetch character data.");
 
@@ -65,7 +65,7 @@ export default function App() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 bg-gold text-lodestoneBlue font-semibold px-6 py-2 rounded-lg hover:bg-yellow-500 transition-all disabled:opacity-50"
+            className="mt-4 bg-gold text-lodestoneBlue font-semibold px-6 py-2 rounded-lg hover:bg-yellow-500 transition-all disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Loading..." : "Fetch Character"}
           </button>
