@@ -12,7 +12,6 @@ app.get("/", (_, res) => {
   res.send("FFXIV Char API");
 });
 
-// Search by name
 app.get("/api/character/search/:name", async (req, res) => {
   try {
     const { name } = req.params;
@@ -24,7 +23,6 @@ app.get("/api/character/search/:name", async (req, res) => {
   }
 });
 
-// Fetch full profile by ID
 app.get("/api/character/id/:id", async (req, res) => {
   try {
     const { id } = req.params;

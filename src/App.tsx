@@ -1,41 +1,49 @@
 import { useState } from "react";
 import bg from "./assets/bg.jpeg";
 import CharacterCard from "./components/CharacterCard";
-
-interface CharacterResult {
-  Avatar: string;
-  ID: number;
-  Lang: string;
-  Name: string;
-  RankName: string;
-  RankIcon: string;
-  World: string;
-  DC: string;
-}
+import type { CharacterSearchResult } from "./types/character";
+import { API_ENDPOINTS } from "./config/constants";
 
 export default function App() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<CharacterResult[]>([]);
+  const [results, setResults] = useState<CharacterSearchResult[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return alert("Please enter a character name.");
+    if (!name.trim()) {
+      setError("Please enter a character name.");
+      return;
+    }
 
     setLoading(true);
     setResults([]);
+    setError(null);
 
     try {
       const nameTrimmed = name.trim();
-      const res = await fetch(
-        `http://localhost:8080/api/character/search/${nameTrimmed}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch character data.");
+      const res = await fetch(API_ENDPOINTS.CHARACTER_SEARCH(nameTrimmed));
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
 
       const data = await res.json();
-      setResults(data.List || []);
+      const characterList = data.List || [];
+
+      if (characterList.length === 0) {
+        setError("No characters found with that name.");
+      } else {
+        setResults(characterList);
+      }
     } catch (err) {
       console.error("Error fetching character:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch character data. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -71,17 +79,24 @@ export default function App() {
           </button>
         </form>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mt-6 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
         {/* Character Results */}
         {results.length > 0 && (
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {results.map((char) => (
-              <CharacterCard char={char} />
+              <CharacterCard key={char.ID} char={char} />
             ))}
           </div>
         )}
 
         {/* Empty State */}
-        {!loading && results.length === 0 && (
+        {!loading && results.length === 0 && !error && (
           <p className="mt-8 text-parchment/60 text-sm">
             Enter a character name to begin your search.
           </p>

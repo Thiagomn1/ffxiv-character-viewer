@@ -1,39 +1,42 @@
 import { useState } from "react";
 import CharacterBannerDialog from "./CharacterBannerDialog";
+import type { CharacterSearchResult, CharacterDetail } from "../types/character";
+import { API_ENDPOINTS } from "../config/constants";
 
-interface CharacterResult {
-  Avatar: string;
-  ID: number;
-  Lang: string;
-  Name: string;
-  RankName: string;
-  RankIcon: string;
-  World: string;
-  DC: string;
-}
-
-export default function CharacterCard({ char }: { char: CharacterResult }) {
+export default function CharacterCard({ char }: { char: CharacterSearchResult }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
+  const [character, setCharacter] = useState<CharacterDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClick = async (id: number) => {
-    if (!id) return alert("No ID found for specified character.");
+    if (!id) {
+      setError("No ID found for specified character.");
+      return;
+    }
 
     setLoading(true);
-    setResults(null);
+    setCharacter(null);
+    setError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/character/id/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch character data.");
+      const res = await fetch(API_ENDPOINTS.CHARACTER_BY_ID(id));
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
 
       const data = await res.json();
-      console.log(data);
-      setResults(data || null);
+      setCharacter(data);
+      setOpen(true);
     } catch (err) {
       console.error("Error fetching character:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch character details."
+      );
     } finally {
-      setOpen(true);
       setLoading(false);
     }
   };
@@ -71,7 +74,8 @@ export default function CharacterCard({ char }: { char: CharacterResult }) {
       <CharacterBannerDialog
         open={open}
         onOpenChange={setOpen}
-        character={results}
+        character={character}
+        error={error}
       />
     </>
   );
